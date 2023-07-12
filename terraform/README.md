@@ -36,19 +36,6 @@ No inputs.
 ## Updating the Terraform README
 Run `terraform-docs markdown ./terraform --output-file README.md` from the root of the directory.
 
-## Github Actions Secrets & Aggressive *** replacement in logs
-
-When you use a [GitHub Actions secret][github-secrets] inside a workflow, _each_
-line of the secret is masked in log output. This is controlled by GitHub, not
-the `auth` action. We cannot change this behavior.
-
-This can be problematic if your secret is a multi-line JSON string, since it
-means curly braces (`{}`) and brackets (`[]`) will likely be replaced as `***`
-in the GitHub Actions log output. To avoid this, remove all unnecessary
-whitespace from the JSON and save the secret as a single-line JSON string. You
-can convert a multi-line JSON document to a single-line manually or by using a
-tool like `jq`:
-
 ```sh
 cat credentials.json | jq -r tostring
 ```
