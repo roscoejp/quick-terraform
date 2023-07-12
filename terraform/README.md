@@ -35,7 +35,3 @@ No inputs.
 
 ## Updating the Terraform README
 Run `terraform-docs markdown ./terraform --output-file README.md` from the root of the directory.
-
-```sh
-cat credentials.json | jq -r tostring
-```
