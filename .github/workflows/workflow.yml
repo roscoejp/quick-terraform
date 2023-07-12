@@ -55,7 +55,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -out tfplan
+        run: terraform plan -no-color -out tfplan --var 'project_id=${{ secrets.PROJECT_ID }}'
         continue-on-error: true
 
       # Writes message to PR once and updates on subsequent runs
@@ -121,4 +121,4 @@ jobs:
         # Note: Should probably set status check to "strict" but no real way to enforce here: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
       - name: Terraform Apply
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: terraform apply -no-color tfplan
+        run: terraform apply -no-color --var 'project_id=${{ secrets.PROJECT_ID }}' tfplan
