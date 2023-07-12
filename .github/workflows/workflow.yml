@@ -3,12 +3,10 @@ name: "Terraform CI"
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
-env:
-  tf_actions_working_dir: terraform
+      - master
 
 jobs:
   terraform:
@@ -22,14 +20,21 @@ jobs:
 
     defaults:
       run:
-        working-directory: ${{ env.tf_actions_working_dir }}
+        working-directory: terraform
 
     steps:
       # Checkout the repo
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Install the latest version of Terraform CLI
+      # Auth to GCP, we shouldn't need to pass any further creds
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+      # Install Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -50,9 +55,10 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -out tfplan
+        run: terraform plan -no-color -out tfplan --var 'project_id=${{ secrets.PROJECT_ID }}'
         continue-on-error: true
 
+      # Writes message to PR once and updates on subsequent runs
       - uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         env:
@@ -111,8 +117,8 @@ jobs:
               })
             }
 
-        # TF apply on push to main
+        # TF apply on push to master
         # Note: Should probably set status check to "strict" but no real way to enforce here: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -no-color tfplan
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: terraform apply -no-color --var 'project_id=${{ secrets.PROJECT_ID }}' tfplan
